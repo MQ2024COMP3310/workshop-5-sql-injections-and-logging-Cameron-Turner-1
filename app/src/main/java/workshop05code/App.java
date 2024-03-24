@@ -56,9 +56,14 @@ public class App {
             String line;
             int i = 1;
             while ((line = br.readLine()) != null) {
-                System.out.println(line);
-                wordleDatabaseConnection.addValidWord(i, line);
-                i++;
+                if (line.matches("^[a-z]{4}$")) {
+                    System.out.println(line);
+                    wordleDatabaseConnection.addValidWord(i, line);
+                    i++;
+                } else {
+                    System.out.println("ERROR - Invalid input word: " + line);
+                    System.out.println("Words must be 4 lowercase letters, with no numbers or symbols.");
+                }
             }
 
         } catch (IOException e) {
@@ -72,8 +77,20 @@ public class App {
         try (Scanner scanner = new Scanner(System.in)) {
             System.out.print("Enter a 4 letter word for a guess or q to quit: ");
             String guess = scanner.nextLine();
-
+            
+            notQuitOption:
             while (!guess.equals("q")) {
+                while (guess.matches("^[a-z]{4}$") == false) { //Validates player input, requiring a new guess if input is invalid
+                    System.out.print("Incorrect input. Word must be 4 lowercase letters, with no numbers or symbols. \n");
+                    System.out.print("Enter a 4 letter word for a guess or q to quit: ");
+                    logger.log(Level.SEVERE, "");
+                    guess = scanner.nextLine();
+                    if (guess.equals("q")) {
+                        /*Allows users to quit from the "Incorrect Input" prompt. Previously submitting "q" after a bad input would say
+                        that "q" is a bad input, preventing the player from quitting unless they guess correctly*/
+                        break notQuitOption; 
+                    }
+                }
                 System.out.println("You've guessed '" + guess+"'.");
 
                 if (wordleDatabaseConnection.isValidWord(guess)) { 
@@ -86,7 +103,7 @@ public class App {
                 guess = scanner.nextLine();
             }
         } catch (NoSuchElementException | IllegalStateException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, e.getMessage());
         }
 
     }
